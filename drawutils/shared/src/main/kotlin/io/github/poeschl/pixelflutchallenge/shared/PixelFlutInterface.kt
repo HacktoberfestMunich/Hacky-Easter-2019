@@ -49,6 +49,15 @@ class PixelFlutInterface(address: String, port: Int) {
     }
 
     /**
+     * Draw a set of pixels.
+     *
+     * @param pixels The set of pixels.
+     */
+    fun paintPixelSet(pixels: Set<Pixel>) {
+        pixels.parallelStream().forEach(this::paintPixel)
+    }
+
+    /**
      * Retuns the Pixel on the given position.
      *
      * @return The pixel at the point.
@@ -78,12 +87,15 @@ class PixelFlutInterface(address: String, port: Int) {
      * Paints the whole wall black
      */
     fun blank() {
+        println("Blanking Screen")
+        val set = mutableSetOf<Pixel>()
         val wallSize = getPlaygrounSize()
         for (x: Int in 0..wallSize.first) {
             for (y: Int in 0..wallSize.second) {
-                paintPixel(Pixel(Point(x, y), Color.BLACK))
+                set.add(Pixel(Point(x, y), Color.BLACK))
             }
         }
+        this.paintPixelSet(set)
     }
 
     fun close() {
