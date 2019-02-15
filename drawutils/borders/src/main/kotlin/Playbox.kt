@@ -13,7 +13,14 @@ class Playbox(private val origin: Point, private val size: Pair<Int, Int>) {
 
     companion object {
         private val DEFAULT_BORDER_COLOR = Color.WHITE
+        private val SOLVED_BORDER_COLOR = Color.GREEN
         private const val SPLIT_COUNT = 2
+    }
+
+    private var drawColor = DEFAULT_BORDER_COLOR
+
+    fun markAsSolved() {
+        drawColor = SOLVED_BORDER_COLOR
     }
 
     fun draw(pixelFlutInterface: PixelFlutInterface) {
@@ -24,17 +31,17 @@ class Playbox(private val origin: Point, private val size: Pair<Int, Int>) {
     private fun drawBorder(pixelFlutInterface: PixelFlutInterface) {
         runBlocking {
             launch {
-                drawHorizontalLine(pixelFlutInterface, origin, size.first, DEFAULT_BORDER_COLOR)
+                drawHorizontalLine(pixelFlutInterface, origin, size.first, drawColor)
             }
             launch {
-                drawVerticalLine(pixelFlutInterface, origin, size.second, DEFAULT_BORDER_COLOR)
+                drawVerticalLine(pixelFlutInterface, origin, size.second, drawColor)
             }
 
             launch {
-                drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, size.second - 1)), size.first, DEFAULT_BORDER_COLOR)
+                drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, size.second - 1)), size.first, drawColor)
             }
             launch {
-                drawVerticalLine(pixelFlutInterface, origin.plus(Point(size.first - 1, 0)), size.second, DEFAULT_BORDER_COLOR)
+                drawVerticalLine(pixelFlutInterface, origin.plus(Point(size.first - 1, 0)), size.second, drawColor)
             }
         }
     }
@@ -46,12 +53,12 @@ class Playbox(private val origin: Point, private val size: Pair<Int, Int>) {
         runBlocking {
             launch {
                 for (i: Int in 0 until SPLIT_COUNT) {
-                    drawVerticalLine(pixelFlutInterface, origin.plus(Point(xSplit * i, 0)), size.second, DEFAULT_BORDER_COLOR)
+                    drawVerticalLine(pixelFlutInterface, origin.plus(Point(xSplit * i, 0)), size.second, drawColor)
                 }
             }
             launch {
                 for (i: Int in 0 until SPLIT_COUNT) {
-                    drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, ySplit * i)), size.first, DEFAULT_BORDER_COLOR)
+                    drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, ySplit * i)), size.first, drawColor)
                 }
             }
         }

@@ -32,8 +32,8 @@ class BorderDrawer(host: String, port: Int) : Painter() {
         val xSlice = displaySize.first / SPLIT_COUNT
         val ySlice = displaySize.second / SPLIT_COUNT
 
-        for (x: Int in 0 until SPLIT_COUNT) {
-            for (y: Int in 0 until SPLIT_COUNT) {
+        for (y: Int in 0 until SPLIT_COUNT) {
+            for (x: Int in 0 until SPLIT_COUNT) {
                 if (x == FINAL_CHALLENGE_POSITION && y == FINAL_CHALLENGE_POSITION) {
                     drawRect(pixelFlutInterface, Point(xSlice * x, ySlice * y), Pair(xSlice, ySlice), Color.RED)
                 } else {
@@ -49,8 +49,14 @@ class BorderDrawer(host: String, port: Int) : Painter() {
     }
 
     override fun handleInput(input: String) {
-        when (input) {
-            "blank" -> pixelFlutInterface.blank()
+        when {
+            input == "blank" -> pixelFlutInterface.blank()
+            input.startsWith("finish") && input.split(' ').size == 2 -> {
+                val boxId = input.split(' ')[1].toInt()
+                if (boxId >= 0 && boxId < playboxes.size)
+                    playboxes[boxId].markAsSolved()
+            }
+            else -> println("Not recognized command!")
         }
     }
 
