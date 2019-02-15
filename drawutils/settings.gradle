@@ -1,0 +1,4 @@
+rootProject.name = 'pixelflut-challenge-drawutils'
+include 'borders'
+include 'labyrinth'
+include 'shared'

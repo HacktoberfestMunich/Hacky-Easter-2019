@@ -1,4 +1,0 @@
-rootProject.name = 'pixelflut-challenge-server'
-include 'borders'
-include 'labyrinth'
-include 'shared'
