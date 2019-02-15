@@ -26,6 +26,12 @@ class BorderDrawer(host: String, port: Int) : Painter() {
 
     private val playboxes = mutableListOf<Playbox>()
 
+    override fun displayHelp() {
+        super.displayHelp()
+        println("blank -> Wipes the screen")
+        println("finish <id> -> mark the playground with id as finished (id starts at 0 left to the right)")
+    }
+
     override fun init() {
         println("Detected size $displaySize")
 

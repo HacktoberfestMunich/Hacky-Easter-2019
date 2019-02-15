@@ -16,7 +16,10 @@ abstract class Painter {
             }
         }
 
-        println("'quit' to quit \\_o_/")
+        println("\nCommands: ")
+        displayHelp()
+        println()
+
         var input: String
         do {
             print("> ")
@@ -32,6 +35,10 @@ abstract class Painter {
         } while (runningInput)
 
         afterStop()
+    }
+
+    open fun displayHelp() {
+        println("quit -> (╯°□°）╯︵ ┻━┻)")
     }
 
     abstract fun init()
