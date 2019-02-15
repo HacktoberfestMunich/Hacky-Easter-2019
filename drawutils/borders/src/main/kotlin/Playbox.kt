@@ -16,7 +16,6 @@ class Playbox(private val origin: Point, private val size: Pair<Int, Int>) {
     }
 
     fun draw(pixelFlutInterfac: PixelFlutInterface) {
-        println("Draw Playbox at $origin")
         runBlocking {
             launch {
                 drawHorizontalLine(pixelFlutInterfac, origin, size.first, DEFAULT_BORDER_COLOR)

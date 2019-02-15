@@ -2,6 +2,7 @@ package io.github.poeschl.pixelflutchallenge.borders
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import io.github.poeschl.pixelflutchallenge.shared.Painter
 import io.github.poeschl.pixelflutchallenge.shared.PixelFlutInterface
 import io.github.poeschl.pixelflutchallenge.shared.Point
 import io.github.poeschl.pixelflutchallenge.shared.drawRect
@@ -10,30 +11,27 @@ import java.awt.Color
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::Args).run {
         println("Start drawing on $host:$port")
-        BorderDrawer(host, port).drawBorders()
+        BorderDrawer(host, port).start()
     }
 }
 
-class BorderDrawer(host: String, port: Int) {
-
+class BorderDrawer(host: String, port: Int) : Painter() {
     companion object {
+
         private const val SPLIT_COUNT = 3
         private val FINAL_CHALLENGE_POSITION = Math.floor(SPLIT_COUNT / 2.0).toInt()
     }
-
     private val pixelFlutInterface = PixelFlutInterface(host, port)
 
     private val displaySize = pixelFlutInterface.getPlaygrounSize()
 
-    fun drawBorders() {
+    private val playboxes = mutableListOf<Playbox>()
+
+    override fun init() {
         println("Detected size $displaySize")
 
         val xSlice = displaySize.first / SPLIT_COUNT
         val ySlice = displaySize.second / SPLIT_COUNT
-
-        //pixelFlutInterface.blank()
-
-        val playboxes = mutableListOf<Playbox>()
 
         for (x: Int in 0 until SPLIT_COUNT) {
             for (y: Int in 0 until SPLIT_COUNT) {
@@ -44,10 +42,20 @@ class BorderDrawer(host: String, port: Int) {
                 }
             }
         }
+        println("Setup ${playboxes.size} playboxes")
+    }
 
+    override fun render() {
         playboxes.parallelStream().forEach { it.draw(pixelFlutInterface) }
-        println("Printed ${playboxes.size} playboxes")
+    }
 
+    override fun handleInput(input: String) {
+        when (input) {
+            "blank" -> pixelFlutInterface.blank()
+        }
+    }
+
+    override fun afterStop() {
         pixelFlutInterface.close()
     }
 }
