@@ -105,9 +105,7 @@ class PixelFlutInterface(address: String, port: Int) {
     }
 
     private fun convertColorToHex(color: Color): String {
-        return Integer.toHexString(color.red) +
-                Integer.toHexString(color.green) +
-                Integer.toHexString(color.blue)
+        return String.format("%02X%02X%02X", color.red, color.green, color.blue)
     }
 
     private fun convertHexToColor(hex: String): Color {
