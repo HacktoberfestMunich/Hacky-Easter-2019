@@ -1,0 +1,10 @@
+jar {
+    manifest {
+        attributes 'Main-Class': 'io.github.poeschl.pixelflutchallenge.labyrinth.LabyrinthDrawerKt'
+    }
+}
+
+dependencies {
+    compile project(':shared')
+    compile files('libs/Laby.jar')
+}

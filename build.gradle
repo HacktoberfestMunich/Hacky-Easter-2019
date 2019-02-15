@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.20'
+    id 'idea'
+}
+
+group 'io.github.poeschl'
+
+allprojects {
+    buildscript {
+        repositories {
+            jcenter()
+            mavenCentral()
+        }
+    }
+
+    wrapper {
+        distributionType = Wrapper.DistributionType.ALL
+        gradleVersion = '5.2.1'
+    }
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'idea'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events "failed"
+        }
+    }
+
+    dependencies {
+        implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1"
+    }
+}
