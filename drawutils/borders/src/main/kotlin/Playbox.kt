@@ -13,22 +13,46 @@ class Playbox(private val origin: Point, private val size: Pair<Int, Int>) {
 
     companion object {
         private val DEFAULT_BORDER_COLOR = Color.WHITE
+        private const val SPLIT_COUNT = 2
     }
 
-    fun draw(pixelFlutInterfac: PixelFlutInterface) {
+    fun draw(pixelFlutInterface: PixelFlutInterface) {
+        drawBorder(pixelFlutInterface)
+        drawInternalSplit(pixelFlutInterface)
+    }
+
+    private fun drawBorder(pixelFlutInterface: PixelFlutInterface) {
         runBlocking {
             launch {
-                drawHorizontalLine(pixelFlutInterfac, origin, size.first, DEFAULT_BORDER_COLOR)
+                drawHorizontalLine(pixelFlutInterface, origin, size.first, DEFAULT_BORDER_COLOR)
             }
             launch {
-                drawVerticalLine(pixelFlutInterfac, origin, size.second, DEFAULT_BORDER_COLOR)
+                drawVerticalLine(pixelFlutInterface, origin, size.second, DEFAULT_BORDER_COLOR)
             }
 
             launch {
-                drawHorizontalLine(pixelFlutInterfac, origin.plus(Point(0, size.second - 1)), size.first, DEFAULT_BORDER_COLOR)
+                drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, size.second - 1)), size.first, DEFAULT_BORDER_COLOR)
             }
             launch {
-                drawVerticalLine(pixelFlutInterfac, origin.plus(Point(size.first - 1, 0)), size.second, DEFAULT_BORDER_COLOR)
+                drawVerticalLine(pixelFlutInterface, origin.plus(Point(size.first - 1, 0)), size.second, DEFAULT_BORDER_COLOR)
+            }
+        }
+    }
+
+    private fun drawInternalSplit(pixelFlutInterface: PixelFlutInterface) {
+        val xSplit = size.first / SPLIT_COUNT
+        val ySplit = size.second / SPLIT_COUNT
+
+        runBlocking {
+            launch {
+                for (i: Int in 0 until SPLIT_COUNT) {
+                    drawVerticalLine(pixelFlutInterface, origin.plus(Point(xSplit * i, 0)), size.second, DEFAULT_BORDER_COLOR)
+                }
+            }
+            launch {
+                for (i: Int in 0 until SPLIT_COUNT) {
+                    drawHorizontalLine(pixelFlutInterface, origin.plus(Point(0, ySplit * i)), size.first, DEFAULT_BORDER_COLOR)
+                }
             }
         }
     }

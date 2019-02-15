@@ -17,7 +17,6 @@ fun main(args: Array<String>) {
 
 class BorderDrawer(host: String, port: Int) : Painter() {
     companion object {
-
         private const val SPLIT_COUNT = 3
         private val FINAL_CHALLENGE_POSITION = Math.floor(SPLIT_COUNT / 2.0).toInt()
     }
