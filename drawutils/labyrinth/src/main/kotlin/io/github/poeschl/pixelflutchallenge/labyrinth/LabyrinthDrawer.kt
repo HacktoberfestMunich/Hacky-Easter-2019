@@ -35,13 +35,14 @@ class LabyrinthDrawer(private val host: String, private val port: Int) {
         val sizeY = (displaySize.second / SPLIT_COUNT)
 
         val maxMazeSize = Pair((sizeX / Maze.CELL_SIZE) - 1, (sizeY / Maze.CELL_SIZE) - 1)
-        val centerOffset = Point((sizeX - (maxMazeSize.first * Maze.CELL_SIZE)) / 4, (sizeY - (maxMazeSize.second * Maze.CELL_SIZE)) / 4)
-        val mazeOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y).plus(centerOffset)
+        val centerOffset = Point((sizeX - (maxMazeSize.first * Maze.CELL_SIZE)) / 2, (sizeY - (maxMazeSize.second * Maze.CELL_SIZE)) / 2)
+        val cellOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
+        val mazeOrigin = cellOrigin.plus(centerOffset)
 
         println("Maze Origin: $mazeOrigin")
         println("Maze Size (cells): $maxMazeSize")
 
-        drawRect(drawInterface, mazeOrigin, Pair(displaySize.first / SPLIT_COUNT, displaySize.second / SPLIT_COUNT), Color.BLACK)
+        drawRect(drawInterface, cellOrigin, Pair(sizeX, sizeY), Color.BLACK)
 
         val mazeGrid = createNewMazeGrid(MAZE_START, maxMazeSize)
         val mazeDrawer = Maze(mazeOrigin, maxMazeSize)

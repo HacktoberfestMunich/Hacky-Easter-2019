@@ -2,7 +2,10 @@ package io.github.poeschl.pixelflutchallenge.labyrinth
 
 import de.amr.graph.core.api.Edge
 import io.github.poeschl.pixelflutchallenge.shared.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.awt.Color
+import java.util.*
 import java.util.stream.Stream
 
 class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) {
@@ -16,36 +19,39 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
         const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
     }
 
-    private var shadowMaze = mutableSetOf<Pixel>()
-    private var mazeSet = mutableSetOf<Pixel>()
+    private var shadowMaze = Collections.synchronizedSet(mutableSetOf<Pixel>())
+    private var mazeSet = setOf<Pixel>()
 
     fun updateMaze(edges: Stream<Edge>) {
-        for (x: Int in 0 until mazeCellSize.first) {
-            for (y: Int in 0 until mazeCellSize.second) {
-                createVertexes(Point(x, y))
-            }
-        }
-        edges.forEach { drawEdge(it) }
-        mazeSet = shadowMaze.filter { it.color != Color.BLACK }.toHashSet()
+        createGrid()
+        edges.parallel().forEach { createEdges(it) }
+        mazeSet = shadowMaze.toSet()
+        shadowMaze.clear()
     }
 
     fun draw(drawInterface: PixelFlutInterface) {
         drawInterface.paintPixelSet(mazeSet)
     }
 
-    private fun createVertexes(position: Point) {
+    private fun createGrid() {
+        val fullWidth = CELL_SIZE * mazeCellSize.first
+        val fullHeight = CELL_SIZE * mazeCellSize.second
 
-        val vertexOrigin = origin.plus(
-            Point(position.x * CELL_SIZE, position.y * CELL_SIZE)
-        )
-        shadowMaze.addAll(createHorizontalPixels(vertexOrigin, CELL_SIZE, WALL_COLOR))
-        shadowMaze.addAll(createHorizontalPixels(vertexOrigin.plus(Point(0, CELL_SIZE)), CELL_SIZE, WALL_COLOR))
-        shadowMaze.addAll(createVerticalPixels(vertexOrigin, CELL_SIZE, WALL_COLOR))
-        shadowMaze.addAll(createVerticalPixels(vertexOrigin.plus(Point(CELL_SIZE, 0)), CELL_SIZE, WALL_COLOR))
-        shadowMaze.add(Pixel(vertexOrigin.plus(Point(CELL_SIZE, CELL_SIZE)), WALL_COLOR))
+        runBlocking {
+            launch {
+                for (x: Int in 0..mazeCellSize.first) {
+                    shadowMaze.addAll(createVerticalPixels(origin.plus(Point(x * CELL_SIZE, 0)), fullHeight, WALL_COLOR))
+                }
+            }
+            launch {
+                for (y: Int in 0..mazeCellSize.second) {
+                    shadowMaze.addAll(createHorizontalPixels(origin.plus(Point(0, y * CELL_SIZE)), fullWidth, WALL_COLOR))
+                }
+            }
+        }
     }
 
-    private fun drawEdge(edge: Edge) {
+    private fun createEdges(edge: Edge) {
         val from = getPointOfMazeCell(Math.min(edge.either(), edge.other()))
         val to = getPointOfMazeCell(Math.max(edge.either(), edge.other()))
 
