@@ -26,13 +26,16 @@ fun drawVerticalLine(drawInterface: PixelFlutInterface, start: Point, height: In
     drawInterface.paintPixelSet(createVerticalPixels(start, height, color))
 }
 
-fun drawRect(drawInterface: PixelFlutInterface, origin: Point, size: Pair<Int, Int>, color: Color) {
+fun createRectPixels(origin: Point, size: Pair<Int, Int>, color: Color): Set<Pixel> {
     val pixels = mutableSetOf<Pixel>()
     for (x: Int in origin.x until (origin.x + size.first)) {
         for (y: Int in origin.y until (origin.y + size.second)) {
             pixels.add(Pixel(Point(x, y), color))
         }
     }
+    return pixels
+}
 
-    drawInterface.paintPixelSet(pixels)
+fun drawRect(drawInterface: PixelFlutInterface, origin: Point, size: Pair<Int, Int>, color: Color) {
+    drawInterface.paintPixelSet(createRectPixels(origin, size, color))
 }

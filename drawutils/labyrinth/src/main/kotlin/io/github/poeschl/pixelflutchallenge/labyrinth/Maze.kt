@@ -15,6 +15,8 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
         private const val PATH_SIZE = 8
         private const val BORDER_WIDTH = 1
         private val WALL_COLOR = Color.WHITE
+        private val START_COLOR = Color.CYAN
+        private val END_COLOR = Color.MAGENTA
 
         const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
     }
@@ -47,6 +49,20 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
                 for (y: Int in 0..mazeCellSize.second) {
                     shadowMaze.addAll(createHorizontalPixels(origin.plus(Point(0, y * CELL_SIZE)), fullWidth, WALL_COLOR))
                 }
+            }
+            launch {
+                shadowMaze.addAll(createRectPixels(origin.plus(Point(BORDER_WIDTH, BORDER_WIDTH)), Pair(PATH_SIZE + 1, PATH_SIZE + 1), START_COLOR))
+            }
+            launch {
+                shadowMaze.addAll(
+                    createRectPixels(
+                        origin
+                            .plus(Point(fullWidth - CELL_SIZE, fullHeight - CELL_SIZE))
+                            .plus(Point(BORDER_WIDTH, BORDER_WIDTH)),
+                        Pair(PATH_SIZE + 1, PATH_SIZE + 1),
+                        END_COLOR
+                    )
+                )
             }
         }
     }
