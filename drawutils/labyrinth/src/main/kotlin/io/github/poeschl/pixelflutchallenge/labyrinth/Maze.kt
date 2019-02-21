@@ -11,8 +11,9 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
         private const val DEBUG = false
         private const val PATH_SIZE = 8
         private const val BORDER_WIDTH = 1
-        private const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
         private val WALL_COLOR = Color.WHITE
+
+        const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
     }
 
     private var shadowMaze = mutableSetOf<Pixel>()
@@ -49,7 +50,7 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
         val to = getPointOfMazeCell(Math.max(edge.either(), edge.other()))
 
         when {
-            from.x == to.x && from.y != to.y -> drawVerticalPath(from, to)
+            from.x == to.x && from.y != to.y -> drawVerticalPathToBottom(from)
             from.y == to.y && from.x != to.x -> removeVerticalBorderToRightOf(from)
         }
     }
@@ -64,7 +65,7 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
         }
     }
 
-    private fun drawVerticalPath(from: Point, to: Point) {
+    private fun drawVerticalPathToBottom(from: Point) {
         for (xOffset in 0..PATH_SIZE) {
             val wallPoint = from.plus(Point(BORDER_WIDTH + xOffset, CELL_SIZE))
             shadowMaze.removeIf { it.point == origin.plus(wallPoint) }
@@ -76,7 +77,7 @@ class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) 
 
     private fun getPointOfMazeCell(index: Int): Point {
         val y = (index / mazeCellSize.first) * CELL_SIZE
-        val x = (index % mazeCellSize.second) * CELL_SIZE
+        val x = (index % mazeCellSize.first) * CELL_SIZE
         return Point(x, y)
     }
 }

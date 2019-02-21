@@ -3,7 +3,7 @@ package io.github.poeschl.pixelflutchallenge.labyrinth
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import de.amr.graph.grid.impl.OrthogonalGrid
-import de.amr.maze.alg.traversal.RandomBFS
+import de.amr.maze.alg.traversal.GrowingTreeAlwaysRandom
 import io.github.poeschl.pixelflutchallenge.shared.PixelFlutInterface
 import io.github.poeschl.pixelflutchallenge.shared.Point
 import io.github.poeschl.pixelflutchallenge.shared.drawRect
@@ -21,7 +21,7 @@ class LabyrinthDrawer(private val host: String, private val port: Int) {
     companion object {
         private const val SPLIT_COUNT = 3
         private val MAZE_CELL = Point(1, 1)
-        private val MAZE_SIZE = Pair(10, 10)
+        private val MAZE_START = Point(0, 0)
     }
 
     private val drawInterface = PixelFlutInterface(host, port)
@@ -31,18 +31,22 @@ class LabyrinthDrawer(private val host: String, private val port: Int) {
     fun start() {
         println("Detected size $displaySize")
 
-        val mazeOrigin = Point(
-            (displaySize.first / SPLIT_COUNT) * MAZE_CELL.x,
-            (displaySize.second / SPLIT_COUNT) * MAZE_CELL.y
-        )
+        val sizeX = (displaySize.first / SPLIT_COUNT)
+        val sizeY = (displaySize.second / SPLIT_COUNT)
+
+        val mazeOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
+
+        val maxMazeSize = Pair((sizeX / Maze.CELL_SIZE) - 1, (sizeY / Maze.CELL_SIZE) - 1)
+
         println("Maze Origin: $mazeOrigin")
+        println("Maze Size (cells): $maxMazeSize")
 
         drawRect(drawInterface, mazeOrigin, Pair(displaySize.first / SPLIT_COUNT, displaySize.second / SPLIT_COUNT), Color.BLACK)
 
-        val mazeGrid = createNewMazeGrid(Point(0, 0), MAZE_SIZE)
-        val mazeDrawer = Maze(mazeOrigin, MAZE_SIZE)
+        val mazeGrid = createNewMazeGrid(MAZE_START, maxMazeSize)
+        val mazeDrawer = Maze(mazeOrigin, maxMazeSize)
 
-        mazeGrid.edges().forEach { println("${it.either()} -> ${it.other()}") }
+        println("Update draw")
         mazeDrawer.updateMaze(mazeGrid.edges())
 
         println("Draw maze")
@@ -52,7 +56,8 @@ class LabyrinthDrawer(private val host: String, private val port: Int) {
     }
 
     private fun createNewMazeGrid(start: Point, size: Pair<Int, Int>): OrthogonalGrid {
-        val mazeGen = RandomBFS(size.first, size.second)
+        println("Generate Maze")
+        val mazeGen = GrowingTreeAlwaysRandom(size.first, size.second)
         mazeGen.createMaze(start.x, start.y)
         return mazeGen.grid
     }
