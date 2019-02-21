@@ -20,9 +20,10 @@ class BorderDrawer(host: String, port: Int) : Painter() {
         private const val SPLIT_COUNT = 3
         private val FINAL_CHALLENGE_POSITION = Math.floor(SPLIT_COUNT / 2.0).toInt()
     }
+
     private val pixelFlutInterface = PixelFlutInterface(host, port)
 
-    private val displaySize = pixelFlutInterface.getPlaygrounSize()
+    private val displaySize = pixelFlutInterface.getPlaygroundSize()
 
     private val playboxes = mutableListOf<Playbox>()
 
