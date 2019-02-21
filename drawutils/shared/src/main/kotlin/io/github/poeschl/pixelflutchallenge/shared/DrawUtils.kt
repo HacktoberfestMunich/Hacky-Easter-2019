@@ -4,24 +4,26 @@ import java.awt.Color
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
-fun drawHorizontalLine(drawInterface: PixelFlutInterface, start: Point, width: Int, color: Color) {
-
-    val pixelSet = IntStream.range(start.x, start.x + width)
+fun createHorizontalPixels(start: Point, width: Int, color: Color): Set<Pixel> {
+    return IntStream.range(start.x, start.x + width)
         .parallel()
         .mapToObj { Pixel(Point(it, start.y), color) }
         .collect(Collectors.toSet())
-
-    drawInterface.paintPixelSet(pixelSet)
 }
 
-fun drawVerticalLine(drawInterface: PixelFlutInterface, start: Point, height: Int, color: Color) {
+fun drawHorizontalLine(drawInterface: PixelFlutInterface, start: Point, width: Int, color: Color) {
+    drawInterface.paintPixelSet(createHorizontalPixels(start, width, color))
+}
 
-    val pixelSet = IntStream.range(start.y, start.y + height)
+fun createVerticalPixels(start: Point, height: Int, color: Color): Set<Pixel> {
+    return IntStream.range(start.y, start.y + height)
         .parallel()
         .mapToObj { Pixel(Point(start.x, it), color) }
         .collect(Collectors.toSet())
+}
 
-    drawInterface.paintPixelSet(pixelSet)
+fun drawVerticalLine(drawInterface: PixelFlutInterface, start: Point, height: Int, color: Color) {
+    drawInterface.paintPixelSet(createVerticalPixels(start, height, color))
 }
 
 fun drawRect(drawInterface: PixelFlutInterface, origin: Point, size: Pair<Int, Int>, color: Color) {

@@ -23,7 +23,7 @@ class PixelFlutInterface(address: String, port: Int) {
      *
      * @return Pair<width, height>
      */
-    fun getPlaygrounSize(): Pair<Int, Int> {
+    fun getPlaygroundSize(): Pair<Int, Int> {
         writer.println(SIZE_COMMAND)
         writer.flush()
 
@@ -89,7 +89,7 @@ class PixelFlutInterface(address: String, port: Int) {
     fun blank() {
         println("Blanking Screen")
         val set = mutableSetOf<Pixel>()
-        val wallSize = getPlaygrounSize()
+        val wallSize = getPlaygroundSize()
         for (x: Int in 0..wallSize.first) {
             for (y: Int in 0..wallSize.second) {
                 set.add(Pixel(Point(x, y), Color.BLACK))
