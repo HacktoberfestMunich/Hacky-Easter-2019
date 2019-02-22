@@ -28,29 +28,13 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
 
     private val displaySize = drawInterface.getPlaygroundSize()
 
+    private lateinit var cellSize: Pair<Int, Int>
+    private lateinit var cellOrigin: Point
     private lateinit var maze: Maze
 
     override fun init() {
-        println("Detected size $displaySize")
-
-        val sizeX = (displaySize.first / SPLIT_COUNT)
-        val sizeY = (displaySize.second / SPLIT_COUNT)
-
-        val maxMazeSize = Pair((sizeX / Maze.CELL_SIZE) - 1, (sizeY / Maze.CELL_SIZE) - 1)
-        val centerOffset = Point((sizeX - (maxMazeSize.first * Maze.CELL_SIZE)) / 2, (sizeY - (maxMazeSize.second * Maze.CELL_SIZE)) / 2)
-        val cellOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
-        val mazeOrigin = cellOrigin.plus(centerOffset)
-
-        println("Maze Origin: $mazeOrigin")
-        println("Maze Size (cells): $maxMazeSize")
-
-        drawRect(drawInterface, cellOrigin, Pair(sizeX, sizeY), Color.BLACK)
-
-        val mazeGrid = createNewMazeGrid(MAZE_START, maxMazeSize)
-        val mazeDrawer = Maze(mazeOrigin, maxMazeSize)
-
-        println("Update draw")
-        mazeDrawer.updateMaze(mazeGrid.edges())
+        initDimenstions()
+        generateMazePixels()
     }
 
     override fun render() {
@@ -64,8 +48,33 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
     override fun handleInput(input: String) {
     }
 
+    private fun initDimenstions() {
+        println("Detected size $displaySize")
+
+        val sizeX = (displaySize.first / SPLIT_COUNT)
+        val sizeY = (displaySize.second / SPLIT_COUNT)
+
+        val maxCellSize = Pair((sizeX / Maze.CELL_SIZE) - 1, (sizeY / Maze.CELL_SIZE) - 1)
+        val centerOffset = Point((sizeX - (maxCellSize.first * Maze.CELL_SIZE)) / 2, (sizeY - (maxCellSize.second * Maze.CELL_SIZE)) / 2)
+
+        cellOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
+        cellSize = Pair(sizeX, sizeY)
+
+        val mazeOrigin = cellOrigin.plus(centerOffset)
+
+        println("Maze Origin: $mazeOrigin")
+        println("Maze Size (cells): $maxCellSize")
+        maze = Maze(mazeOrigin, maxCellSize)
+    }
+
+    private fun generateMazePixels() {
+        val mazeGrid = createNewMazeGrid(MAZE_START, maze.mazeCellSize)
+        println("Update Maze")
+        drawRect(drawInterface, cellOrigin, cellSize, Color.BLACK)
+        maze.updateMaze(mazeGrid.edges())
+    }
+
     private fun createNewMazeGrid(start: Point, size: Pair<Int, Int>): OrthogonalGrid {
-        println("Generate Maze")
         val mazeGen = GrowingTreeAlwaysRandom(size.first, size.second)
         mazeGen.createMaze(start.x, start.y)
         return mazeGen.grid

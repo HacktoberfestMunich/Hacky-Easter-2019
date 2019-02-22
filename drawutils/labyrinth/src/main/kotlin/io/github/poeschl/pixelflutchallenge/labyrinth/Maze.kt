@@ -8,7 +8,7 @@ import java.awt.Color
 import java.util.*
 import java.util.stream.Stream
 
-class Maze(private val origin: Point, private val mazeCellSize: Pair<Int, Int>) {
+class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
 
     companion object {
         private const val DEBUG = false
