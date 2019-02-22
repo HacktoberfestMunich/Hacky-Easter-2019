@@ -4,6 +4,7 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import de.amr.graph.grid.impl.OrthogonalGrid
 import de.amr.maze.alg.traversal.GrowingTreeAlwaysRandom
+import io.github.poeschl.pixelflutchallenge.shared.Painter
 import io.github.poeschl.pixelflutchallenge.shared.PixelFlutInterface
 import io.github.poeschl.pixelflutchallenge.shared.Point
 import io.github.poeschl.pixelflutchallenge.shared.drawRect
@@ -16,19 +17,20 @@ fun main(args: Array<String>) {
     }
 }
 
-class LabyrinthDrawer(private val host: String, private val port: Int) {
-
+class LabyrinthDrawer(host: String, port: Int) : Painter() {
     companion object {
+
         private const val SPLIT_COUNT = 3
         private val MAZE_CELL = Point(1, 1)
         private val MAZE_START = Point(0, 0)
     }
-
     private val drawInterface = PixelFlutInterface(host, port)
 
     private val displaySize = drawInterface.getPlaygroundSize()
 
-    fun start() {
+    private lateinit var maze: Maze
+
+    override fun init() {
         println("Detected size $displaySize")
 
         val sizeX = (displaySize.first / SPLIT_COUNT)
@@ -49,11 +51,17 @@ class LabyrinthDrawer(private val host: String, private val port: Int) {
 
         println("Update draw")
         mazeDrawer.updateMaze(mazeGrid.edges())
+    }
 
-        println("Draw maze")
-        mazeDrawer.draw(drawInterface)
+    override fun render() {
+        maze.draw(drawInterface)
+    }
 
+    override fun afterStop() {
         drawInterface.close()
+    }
+
+    override fun handleInput(input: String) {
     }
 
     private fun createNewMazeGrid(start: Point, size: Pair<Int, Int>): OrthogonalGrid {
