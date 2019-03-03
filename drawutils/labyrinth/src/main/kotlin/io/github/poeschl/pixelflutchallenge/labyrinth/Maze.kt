@@ -5,7 +5,7 @@ import io.github.poeschl.pixelflutchallenge.shared.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.Color
-import java.util.*
+import java.util.stream.IntStream
 import java.util.stream.Stream
 
 class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
@@ -21,55 +21,64 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
         const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
     }
 
-    private var shadowMaze = Collections.synchronizedSet(mutableSetOf<Pixel>())
+    private val fullWidth = CELL_SIZE * mazeCellSize.first
+    private val fullHeight = CELL_SIZE * mazeCellSize.second
+
+    private var shadowMatrix = PixelMatrix(fullWidth, fullHeight)
     private var mazeSet = setOf<Pixel>()
 
     fun updateMaze(edges: Stream<Edge>) {
         createGrid()
         edges.parallel().forEach { createEdges(it) }
-        mazeSet = shadowMaze.toSet()
-        shadowMaze.clear()
+        mazeSet = shadowMatrix.getPixelSet().map { Pixel(it.point.plus(origin), it.color) }.toSet()
+        shadowMatrix = PixelMatrix(fullWidth, fullHeight)
     }
 
     fun draw(drawInterface: PixelFlutInterface) {
         drawInterface.paintPixelSet(mazeSet)
     }
 
-    private fun createGrid() {
-        val fullWidth = CELL_SIZE * mazeCellSize.first
-        val fullHeight = CELL_SIZE * mazeCellSize.second
+    fun clear() {
+        mazeSet = setOf()
+    }
 
+    private fun createGrid() {
         runBlocking {
             launch {
-                for (x: Int in 0..mazeCellSize.first) {
-                    shadowMaze.addAll(createVerticalPixels(origin.plus(Point(x * CELL_SIZE, 0)), fullHeight, WALL_COLOR))
-                }
+                IntStream.rangeClosed(0, mazeCellSize.first)
+                    .parallel()
+                    .mapToObj { x -> createVerticalPixels(Point(x * CELL_SIZE, 0), fullHeight, WALL_COLOR) }
+                    .flatMap { it.parallelStream() }
+                    .forEach { shadowMatrix.insert(it) }
             }
             launch {
-                for (y: Int in 0..mazeCellSize.second) {
-                    shadowMaze.addAll(createHorizontalPixels(origin.plus(Point(0, y * CELL_SIZE)), fullWidth, WALL_COLOR))
-                }
+                IntStream.rangeClosed(0, mazeCellSize.second)
+                    .parallel()
+                    .mapToObj { y -> createHorizontalPixels(Point(0, y * CELL_SIZE), fullWidth, WALL_COLOR) }
+                    .flatMap { it.parallelStream() }
+                    .forEach { shadowMatrix.insert(it) }
             }
             launch {
-                shadowMaze.addAll(createRectPixels(origin.plus(Point(BORDER_WIDTH, BORDER_WIDTH)), Pair(PATH_SIZE + 1, PATH_SIZE + 1), START_COLOR))
+                createRectPixels(Point(BORDER_WIDTH, BORDER_WIDTH), Pair(PATH_SIZE + 1, PATH_SIZE + 1), START_COLOR)
+                    .parallelStream()
+                    .forEach { shadowMatrix.insert(it) }
             }
             launch {
-                shadowMaze.addAll(
-                    createRectPixels(
-                        origin
-                            .plus(Point(fullWidth - CELL_SIZE, fullHeight - CELL_SIZE))
-                            .plus(Point(BORDER_WIDTH, BORDER_WIDTH)),
-                        Pair(PATH_SIZE + 1, PATH_SIZE + 1),
-                        END_COLOR
-                    )
+                createRectPixels(
+                    Point(fullWidth - CELL_SIZE, fullHeight - CELL_SIZE)
+                        .plus(Point(BORDER_WIDTH, BORDER_WIDTH)),
+                    Pair(PATH_SIZE + 1, PATH_SIZE + 1),
+                    END_COLOR
                 )
+                    .parallelStream()
+                    .forEach { shadowMatrix.insert(it) }
             }
         }
     }
 
     private fun createEdges(edge: Edge) {
-        val from = getPointOfMazeCell(Math.min(edge.either(), edge.other()))
-        val to = getPointOfMazeCell(Math.max(edge.either(), edge.other()))
+        val from = getOriginPointOfCell(Math.min(edge.either(), edge.other()))
+        val to = getOriginPointOfCell(Math.max(edge.either(), edge.other()))
 
         when {
             from.x == to.x && from.y != to.y -> drawVerticalPathToBottom(from)
@@ -80,9 +89,9 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
     private fun removeVerticalBorderToRightOf(from: Point) {
         for (yOffset in 0..PATH_SIZE) {
             val wallPoint = from.plus(Point(CELL_SIZE, BORDER_WIDTH + yOffset))
-            shadowMaze.removeIf { it.point == origin.plus(wallPoint) }
+            shadowMatrix.remove(wallPoint)
             if (DEBUG) {
-                shadowMaze.add(Pixel(origin.plus(wallPoint), Color.RED))
+                shadowMatrix.insert(Pixel(wallPoint, Color.RED))
             }
         }
     }
@@ -90,14 +99,14 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
     private fun drawVerticalPathToBottom(from: Point) {
         for (xOffset in 0..PATH_SIZE) {
             val wallPoint = from.plus(Point(BORDER_WIDTH + xOffset, CELL_SIZE))
-            shadowMaze.removeIf { it.point == origin.plus(wallPoint) }
+            shadowMatrix.remove(wallPoint)
             if (DEBUG) {
-                shadowMaze.add(Pixel(origin.plus(wallPoint), Color.RED))
+                shadowMatrix.insert(Pixel(wallPoint, Color.RED))
             }
         }
     }
 
-    private fun getPointOfMazeCell(index: Int): Point {
+    private fun getOriginPointOfCell(index: Int): Point {
         val y = (index / mazeCellSize.first) * CELL_SIZE
         val x = (index % mazeCellSize.first) * CELL_SIZE
         return Point(x, y)

@@ -31,8 +31,8 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
     private val displaySize = drawInterface.getPlaygroundSize()
     private val daemonTimer = Timer(true)
 
-    private lateinit var cellSize: Pair<Int, Int>
-    private lateinit var cellOrigin: Point
+    private lateinit var areaSize: Pair<Int, Int>
+    private lateinit var areaOrigin: Point
     private lateinit var maze: Maze
     private var genTimer: TimerTask? = null
 
@@ -77,10 +77,10 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
         val maxCellSize = Pair((sizeX / Maze.CELL_SIZE) - 1, (sizeY / Maze.CELL_SIZE) - 1)
         val centerOffset = Point((sizeX - (maxCellSize.first * Maze.CELL_SIZE)) / 2, (sizeY - (maxCellSize.second * Maze.CELL_SIZE)) / 2)
 
-        cellOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
-        cellSize = Pair(sizeX, sizeY)
+        areaOrigin = Point(sizeX * MAZE_CELL.x, sizeY * MAZE_CELL.y)
+        areaSize = Pair(sizeX, sizeY)
 
-        val mazeOrigin = cellOrigin.plus(centerOffset)
+        val mazeOrigin = areaOrigin.plus(centerOffset)
 
         println("Maze Origin: $mazeOrigin")
         println("Maze Size (cells): $maxCellSize")
@@ -88,10 +88,12 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
     }
 
     private fun generateMazePixels() {
-        println("Update Maze")
+        print("Update Maze...")
         val genMilli = measureTimeMillis {
             val mazeGrid = createNewMazeGrid(MAZE_START, maze.mazeCellSize)
-            drawRect(drawInterface, cellOrigin, cellSize, Color.BLACK)
+            print("Redraw Maze...")
+            maze.clear()
+            drawRect(drawInterface, areaOrigin, areaSize, Color.BLACK)
             maze.updateMaze(mazeGrid.edges())
         }
         println("Maze updated in $genMilli ms")
