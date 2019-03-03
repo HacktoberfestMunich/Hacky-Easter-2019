@@ -6,5 +6,5 @@ services:
     ports:
       - "5900:5900"
       - "1234:1234"
-    command: -w 1920 -h 1080 //-w 3840 -h 2160
+    command: -w 3840 -h 2160
 

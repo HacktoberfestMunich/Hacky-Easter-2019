@@ -3,6 +3,9 @@ package io.github.poeschl.pixelflutchallenge.shared
 import java.awt.Color
 import java.io.*
 import java.net.Socket
+import java.util.stream.Collectors
+import java.util.stream.IntStream
+import kotlin.system.measureTimeMillis
 
 class PixelFlutInterface(address: String, port: Int) {
 
@@ -87,15 +90,24 @@ class PixelFlutInterface(address: String, port: Int) {
      * Paints the whole wall black
      */
     fun blank() {
-        println("Blanking Screen")
-        val set = mutableSetOf<Pixel>()
-        val wallSize = getPlaygroundSize()
-        for (x: Int in 0..wallSize.first) {
-            for (y: Int in 0..wallSize.second) {
-                set.add(Pixel(Point(x, y), Color.BLACK))
-            }
+        print("Create black pixel set...")
+        val blankMillis = measureTimeMillis {
+            val displaySize = getPlaygroundSize()
+
+            val blackPixels = IntStream.rangeClosed(0, displaySize.first)
+                .parallel()
+                .mapToObj { x ->
+                    IntStream.rangeClosed(0, displaySize.second)
+                        .parallel()
+                        .mapToObj { y -> Pixel(Point(x, y), Color.BLACK) }
+                }
+                .flatMap { it }
+                .collect(Collectors.toSet())
+
+            print("Blanking...")
+            this.paintPixelSet(blackPixels)
         }
-        this.paintPixelSet(set)
+        println("$blankMillis ms")
     }
 
     fun close() {
