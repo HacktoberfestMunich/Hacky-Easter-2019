@@ -9,6 +9,9 @@ import io.github.poeschl.pixelflutchallenge.shared.PixelFlutInterface
 import io.github.poeschl.pixelflutchallenge.shared.Point
 import io.github.poeschl.pixelflutchallenge.shared.drawRect
 import java.awt.Color
+import java.util.*
+import kotlin.concurrent.schedule
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::Args).run {
@@ -25,16 +28,23 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
         private val MAZE_START = Point(0, 0)
     }
     private val drawInterface = PixelFlutInterface(host, port)
-
     private val displaySize = drawInterface.getPlaygroundSize()
+    private val daemonTimer = Timer(true)
 
     private lateinit var cellSize: Pair<Int, Int>
     private lateinit var cellOrigin: Point
     private lateinit var maze: Maze
+    private var genTimer: TimerTask? = null
 
     override fun init() {
         initDimenstions()
         generateMazePixels()
+    }
+
+    override fun displayHelp() {
+        super.displayHelp()
+        println("generate -> Generate a new maze")
+        println("timer <delay> -> Set a delay for auto-generation in seconds. Use 0 or any negative value to disable.")
     }
 
     override fun render() {
@@ -43,9 +53,19 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
 
     override fun afterStop() {
         drawInterface.close()
+        daemonTimer.cancel()
     }
 
     override fun handleInput(input: String) {
+        when {
+            input == "generate" -> generateMazePixels()
+            input.startsWith("timer") && input.split(' ').size == 2 -> {
+                val delay = input.split(' ')[1].toLong()
+                setTimerTime(delay)
+                println("Set timer to $delay seconds")
+            }
+            else -> println("Not recognized command!")
+        }
     }
 
     private fun initDimenstions() {
@@ -68,10 +88,13 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
     }
 
     private fun generateMazePixels() {
-        val mazeGrid = createNewMazeGrid(MAZE_START, maze.mazeCellSize)
         println("Update Maze")
-        drawRect(drawInterface, cellOrigin, cellSize, Color.BLACK)
-        maze.updateMaze(mazeGrid.edges())
+        val genMilli = measureTimeMillis {
+            val mazeGrid = createNewMazeGrid(MAZE_START, maze.mazeCellSize)
+            drawRect(drawInterface, cellOrigin, cellSize, Color.BLACK)
+            maze.updateMaze(mazeGrid.edges())
+        }
+        println("Maze updated in $genMilli ms")
     }
 
     private fun createNewMazeGrid(start: Point, size: Pair<Int, Int>): OrthogonalGrid {
@@ -80,6 +103,15 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
         return mazeGen.grid
     }
 
+    private fun setTimerTime(delayInSeconds: Long) {
+
+        if (delayInSeconds < 1) {
+            genTimer?.cancel()
+        } else {
+            genTimer?.cancel()
+            genTimer = daemonTimer.schedule(delayInSeconds * 1000) { generateMazePixels() }
+        }
+    }
 }
 
 class Args(parser: ArgParser) {
