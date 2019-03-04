@@ -1,9 +1,11 @@
-import socket
-import random
-import numpy
 import math
+import random
+import socket
 import time
+
+import numpy
 from PIL import Image
+
 
 class FlutServer:
 
@@ -29,9 +31,9 @@ class FlutServer:
             print("Error: Not connected!")
             return
         if a == 255:
-            self._sock.send(('PX %d %d %02x%02x%02x\n' % (x,y,r,g,b)).encode())
+            self._sock.send(('PX %d %d %02x%02x%02x\n' % (x, y, r, g, b)).encode())
         else:
-            self._sock.send(('PX %d %d %02x%02x%02x%02x\n' % (x,y,r,g,b,a)).encode())
+            self._sock.send(('PX %d %d %02x%02x%02x%02x\n' % (x, y, r, g, b, a)).encode())
 
     def _receive_message(self):
         message = b''
@@ -43,7 +45,7 @@ class FlutServer:
         x = int(values[0])
         y = int(values[1])
         if len(values) > 2:
-            return tuple(int(values[2][i:i+2], 16) for i in (0, 2, 4, 6))
+            return tuple(int(values[2][i:i + 2], 16) for i in (0, 2, 4, 6))
         else:
             return (x, y)
 
@@ -52,11 +54,11 @@ class FlutServer:
             print("Error: Not connected!")
             return
         if x > 1919 or y > 1079:
-            print(x,y)
-            self._sock.send(('PX %d %d\n' % (1919,1079)).encode())
+            print(x, y)
+            self._sock.send(('PX %d %d\n' % (1919, 1079)).encode())
             return self._receive_message()
 
-        self._sock.send(('PX %d %d\n' % (x,y)).encode())
+        self._sock.send(('PX %d %d\n' % (x, y)).encode())
         return self._receive_message()
 
     def get_size(self):
@@ -65,6 +67,7 @@ class FlutServer:
             return
         self._sock.send('SIZE\n'.encode())
         return self._receive_message()
+
 
 class GeometricDrawer():
     def __init__(self, flutServer):
@@ -111,6 +114,7 @@ class GeometricDrawer():
             self._flutServer.set_pixel(x0 + y, y0 - x, r, g, b, a)
             self._flutServer.set_pixel(x0 - y, y0 - x, r, g, b, a)
 
+
 class MazeSolver():
 
     def __init__(self, flutServer):
@@ -145,10 +149,11 @@ class MazeSolver():
 
         if len(result):
             result.sort(key=lambda tup: tup[0])
-            x_mid = result[int(len(result)/2)][0]
+            x_mid = result[int(len(result) / 2)][0]
             result.sort(key=lambda tup: tup[1])
-            y_mid = result[int(len(result)/2)][1]
+            y_mid = result[int(len(result) / 2)][1]
             return (x_mid, y_mid)
+
 
 class PictureDrawer():
 
@@ -190,9 +195,10 @@ class PictureDrawer():
                     else:
                         if isset[xi + i][yi + j] == 1:
                             self._flutServer.set_pixel(x0 + xi + i, y0 + yi + j,
-                                                     *cache[xi + i][yi + j][:3])
+                                                       *cache[xi + i][yi + j][:3])
                             isset[xi + i][yi + j] = 0
-            time.sleep(1.0/s)
+            time.sleep(1.0 / s)
+
 
 class GameBoard():
 
@@ -214,13 +220,15 @@ class GameBoard():
             y = random.randint(0, 5)
         return self.get_field(x, y)
 
+
 class Util():
 
-    def random_color():
+    def random_color(self):
         return (random.randint(0, 255),
                 random.randint(0, 255),
                 random.randint(0, 255),
                 random.randint(0, 255))
+
 
 def main():
     fs = FlutServer('127.0.0.1', 1234)

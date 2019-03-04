@@ -1,0 +1,3 @@
+hovercraft==2.6
+numpy==1.16.2
+Pillow==5.4.1
