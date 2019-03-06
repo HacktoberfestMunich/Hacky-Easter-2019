@@ -44,7 +44,7 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
     override fun displayHelp() {
         super.displayHelp()
         println("generate -> Generate a new maze")
-        println("timer <delay> -> Set a delay for auto-generation in seconds. Use 0 or any negative value to disable.")
+        println("timer <delay> -> Set a delay for auto-generation in minutes. Use 0 or any negative value to disable.")
     }
 
     override fun render() {
@@ -62,7 +62,6 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
             input.startsWith("timer") && input.split(' ').size == 2 -> {
                 val delay = input.split(' ')[1].toLong()
                 setTimerTime(delay)
-                println("Set timer to $delay seconds")
             }
             else -> println("Not recognized command!")
         }
@@ -105,13 +104,16 @@ class LabyrinthDrawer(host: String, port: Int) : Painter() {
         return mazeGen.grid
     }
 
-    private fun setTimerTime(delayInSeconds: Long) {
+    private fun setTimerTime(delayMinutes: Long) {
 
-        if (delayInSeconds < 1) {
+        if (delayMinutes < 1) {
             genTimer?.cancel()
+            println("Disabled timer")
         } else {
             genTimer?.cancel()
-            genTimer = daemonTimer.schedule(delayInSeconds * 1000) { generateMazePixels() }
+            val delayseconds = delayMinutes * 60 * 1000
+            genTimer = daemonTimer.schedule(delayseconds, delayseconds) { generateMazePixels() }
+            println("Set timer to a period of $delayMinutes minute")
         }
     }
 }
