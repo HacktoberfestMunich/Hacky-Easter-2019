@@ -2,9 +2,17 @@ import math
 import random
 import socket
 import time
+from enum import Enum
 
 import numpy
 from PIL import Image
+
+
+class Direction(Enum):
+    UP = 1
+    DOWN = 2
+    LEFT = 3
+    RIGHT = 4
 
 
 class FlutServer:
@@ -14,6 +22,7 @@ class FlutServer:
         self._port = port
         self._connected = False
         self.connect()
+        self.x, self.y = self.get_size()
 
     def connect(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,9 +62,10 @@ class FlutServer:
         if not self._connected:
             print("Error: Not connected!")
             return
-        if x > 1919 or y > 1079:
+        width, height = self.get_size()
+        if x > width - 1 or y > height - 1:
             print(x, y)
-            self._sock.send(('PX %d %d\n' % (1919, 1079)).encode())
+            self._sock.send(('PX %d %d\n' % (width - 1, height - 1)).encode())
             return self._receive_message()
 
         self._sock.send(('PX %d %d\n' % (x, y)).encode())
@@ -71,10 +81,10 @@ class FlutServer:
 
 class GeometricDrawer():
     def __init__(self, flutServer):
-        self._flutServer = flutServer
+        self._fs = flutServer
 
     def draw_bubbles(self, number):
-        size = self._flutServer.get_size()
+        size = self._fs.get_size()
         for _ in range(number):
             x = random.randint(0, size[0])
             y = random.randint(0, size[1])
@@ -84,7 +94,7 @@ class GeometricDrawer():
     def draw_rectangle(self, x0, y0, x, y, r, g, b, a=255):
         for i in range(x):
             for j in range(y):
-                self._flutServer.set_pixel(x0 + i, y0 + j, r, g, b, a)
+                self._fs.set_pixel(x0 + i, y0 + j, r, g, b, a)
 
     def draw_circle(self, x0, y0, radius, r, g, b, a=255):
         f = 1 - radius
@@ -92,10 +102,10 @@ class GeometricDrawer():
         ddf_y = -2 * radius
         x = 0
         y = radius
-        self._flutServer.set_pixel(x0, y0 + radius, r, g, b, a)
-        self._flutServer.set_pixel(x0, y0 - radius, r, g, b, a)
-        self._flutServer.set_pixel(x0 + radius, y0, r, g, b, a)
-        self._flutServer.set_pixel(x0 - radius, y0, r, g, b, a)
+        self._fs.set_pixel(x0, y0 + radius, r, g, b, a)
+        self._fs.set_pixel(x0, y0 - radius, r, g, b, a)
+        self._fs.set_pixel(x0 + radius, y0, r, g, b, a)
+        self._fs.set_pixel(x0 - radius, y0, r, g, b, a)
 
         while x < y:
             if f >= 0:
@@ -105,23 +115,26 @@ class GeometricDrawer():
             x += 1
             ddf_x += 2
             f += ddf_x
-            self._flutServer.set_pixel(x0 + x, y0 + y, r, g, b, a)
-            self._flutServer.set_pixel(x0 - x, y0 + y, r, g, b, a)
-            self._flutServer.set_pixel(x0 + x, y0 - y, r, g, b, a)
-            self._flutServer.set_pixel(x0 - x, y0 - y, r, g, b, a)
-            self._flutServer.set_pixel(x0 + y, y0 + x, r, g, b, a)
-            self._flutServer.set_pixel(x0 - y, y0 + x, r, g, b, a)
-            self._flutServer.set_pixel(x0 + y, y0 - x, r, g, b, a)
-            self._flutServer.set_pixel(x0 - y, y0 - x, r, g, b, a)
+            self._fs.set_pixel(x0 + x, y0 + y, r, g, b, a)
+            self._fs.set_pixel(x0 - x, y0 + y, r, g, b, a)
+            self._fs.set_pixel(x0 + x, y0 - y, r, g, b, a)
+            self._fs.set_pixel(x0 - x, y0 - y, r, g, b, a)
+            self._fs.set_pixel(x0 + y, y0 + x, r, g, b, a)
+            self._fs.set_pixel(x0 - y, y0 + x, r, g, b, a)
+            self._fs.set_pixel(x0 + y, y0 - x, r, g, b, a)
+            self._fs.set_pixel(x0 - y, y0 - x, r, g, b, a)
 
 
 class MazeSolver():
 
+
     def __init__(self, flutServer):
-        self._flutServer = flutServer
+        self._fs = flutServer
+        self._start_color = (0, 255, 255, 255)
+        self._goal_color = (255, 0, 255, 255)
 
     def is_wall(self, x, y):
-        colors = self._flutServer.get_pixel(x, y)
+        colors = self._fs.get_pixel(x, y)
         if colors == (255, 255, 255, 255):
             return True
         else:
@@ -129,7 +142,7 @@ class MazeSolver():
 
     def find_entry(self):
         result = []
-        x_size, y_size = self._flutServer.get_size()
+        x_size, y_size = self._fs.get_size()
         x_start = int(x_size / 3)
         x_end = int((x_size / 3) * 2)
         y_start = int(y_size / 3)
@@ -154,11 +167,108 @@ class MazeSolver():
             y_mid = result[int(len(result) / 2)][1]
             return (x_mid, y_mid)
 
+    def find_start(self):
+        x = self._fs.x // 3
+        y = self._fs.y // 3
+        for i in range(30):
+            if self._fs.get_pixel(x + i, y + i) == self._start_color:
+                x += i
+                y += i
+                x -= self._find_wall(x, y, Direction.LEFT) - 1
+                y -= self._find_wall(x, y, Direction.UP) - 1
+                return x, y
+        print("Error: No start found")
+
+    def _find_wall(self, x, y, direction):
+        if direction == Direction.UP:
+            if y == self._fs.y // 3:
+                return 0
+            for i in range(y - self._fs.y // 3):
+                if self.is_wall(x, y - i):
+                    return i
+        elif direction == Direction.DOWN:
+            if y == self._fs.y // 3 * 2:
+                return 0
+            for i in range(self._fs.y // 3 * 2 - y):
+                if self.is_wall(x, y + i):
+                    return i
+        elif direction == Direction.LEFT:
+            if x == self._fs.x // 3:
+                return 0
+            for i in range(x - self._fs.x // 3):
+                if self.is_wall(x - i, y):
+                    return i
+        elif direction == Direction.RIGHT:
+            if x == self._fs.x // 3 * 2:
+                return 0
+            for i in range(self._fs.x // 3 * 2 - x):
+                if self.is_wall(x + i, y):
+                    return i
+
+    def _draw_step(self, x, y, direction):
+        if direction == Direction.DOWN:
+            for i in range(18):
+                self._fs.set_pixel(x, y + i, 255, 0 ,0)
+                self._fs.set_pixel(x + 1, y + i, 255, 0 ,0)
+        elif direction == Direction.LEFT:
+            for i in range(18):
+                self._fs.set_pixel(x - i, y, 255, 0 ,0)
+                self._fs.set_pixel(x - i, y + 1, 255, 0 ,0)
+        elif direction == Direction.UP:
+            for i in range(18):
+                self._fs.set_pixel(x, y - i, 255, 0 ,0)
+                self._fs.set_pixel(x + 1, y - i, 255, 0 ,0)
+        elif direction == Direction.RIGHT:
+            for i in range(18):
+                self._fs.set_pixel(x + i, y, 255, 0 ,0)
+                self._fs.set_pixel(x + i, y + 1, 255, 0 ,0)
+
+    def _do_right_hand_step(self, x, y, direction):
+        if self._fs.get_pixel(x,y) == self._goal_color:
+            print("Solved")
+            return None
+        if direction == Direction.DOWN:
+            if self._find_wall(x, y, Direction.DOWN) > 17:
+                self._draw_step(x, y, Direction.DOWN)
+                y += 18
+                return (x, y, Direction.LEFT)
+            else:
+                return (x, y, Direction.RIGHT)
+        elif direction == Direction.LEFT:
+            if self._find_wall(x, y, Direction.LEFT) > 17:
+                self._draw_step(x, y, Direction.LEFT)
+                x -= 18
+                return (x, y, Direction.UP)
+            else:
+                return (x, y, Direction.DOWN)
+        elif direction == Direction.UP:
+            if self._find_wall(x, y, Direction.UP) > 17:
+                self._draw_step(x, y, Direction.UP)
+                y -= 18
+                return (x, y, Direction.RIGHT)
+            else:
+                return (x, y, Direction.LEFT)
+        elif direction == Direction.RIGHT:
+            if self._find_wall(x, y, Direction.RIGHT) > 17:
+                self._draw_step(x, y, Direction.RIGHT)
+                x += 18
+                return (x, y, Direction.DOWN)
+            else:
+                return (x, y, Direction.UP)
+
+    def solve_right_hand(self):
+        x, y = self.find_start()
+        direction = Direction.DOWN
+        while True:
+            try:
+                x, y, direction = self._do_right_hand_step(x,y,direction)
+            except:
+                break
 
 class PictureDrawer():
 
     def __init__(self, flutServer):
-        self._flutServer = flutServer
+        self._fs = flutServer
 
     def draw_picture(self, x0, y0, x, y, path, ignore_white=False):
         im = Image.open(path)
@@ -168,7 +278,7 @@ class PictureDrawer():
             for j in range(y):
                 r, g, b = im.getpixel((i, j))
                 if not ignore_white or (r, g, b) != (255, 255, 255):
-                    self._flutServer.set_pixel(x0 + i, y0 + j, r, g, b)
+                    self._fs.set_pixel(x0 + i, y0 + j, r, g, b)
 
     def draw_animation(self, x0, y0, x, y, xt, yt, s, path):
         im = Image.open(path)
@@ -180,7 +290,7 @@ class PictureDrawer():
         isset = numpy.zeros((x + xt, y + yt))
         for i in range(x + xt):
             for j in range(y + yt):
-                cache[i][j] = self._flutServer.get_pixel(x0 + i, y0 + j)
+                cache[i][j] = self._fs.get_pixel(x0 + i, y0 + j)
 
         for d in range(dist):
             xi = int(xt * (d / dist))
@@ -189,12 +299,12 @@ class PictureDrawer():
                 for j in range(y):
                     r, g, b = im.getpixel((i, j))
                     if (r, g, b) != (255, 255, 255):
-                        self._flutServer.set_pixel(x0 + xi + i, y0 + yi + j,
+                        self._fs.set_pixel(x0 + xi + i, y0 + yi + j,
                                                    r, g, b)
                         isset[xi + i][yi + j] = 1
                     else:
                         if isset[xi + i][yi + j] == 1:
-                            self._flutServer.set_pixel(x0 + xi + i, y0 + yi + j,
+                            self._fs.set_pixel(x0 + xi + i, y0 + yi + j,
                                                        *cache[xi + i][yi + j][:3])
                             isset[xi + i][yi + j] = 0
             time.sleep(1.0 / s)
@@ -203,8 +313,8 @@ class PictureDrawer():
 class GameBoard():
 
     def __init__(self, flutServer):
-        self._flutServer = flutServer
-        self.x, self.y = flutServer.get_size()
+        self._fs = flutServer
+        self.x, self.y = self._fs.get_size()
 
     def get_field(self, x, y):
         return (int((self.x / 6) * x) + 1,
@@ -237,15 +347,17 @@ def main():
     gd = GeometricDrawer(fs)
     pd = PictureDrawer(fs)
 
-    fs.get_pixel(1920 - 1, 1080 - 1)
-
     #x, y = ms.find_entry()
-    #pd.draw_bubbles(100)
-    #pd.draw_circle(x, y, 20, 255, 255, 255, 255)
+    #gd.draw_bubbles(100)
+    #gd.draw_circle(x, y, 20, 255, 255, 255, 255)
 
-    x, y, xw, yw = gb.get_random_field()
-    pd.draw_picture(x, y, xw, yw, "/home/platypus/Bilder/troll.jpg")
-    pd.draw_animation(x + 15, y, 150, 150,  0, 40, 10, "/home/platypus/Bilder/thug.jpg")
+    #x, y, xw, yw = gb.get_random_field()
+    #pd.draw_picture(x, y, xw, yw, "troll.jpg")
+    #pd.draw_animation(x + 30, y, 300, 300,  0, 80, 20, "thug.jpg")
+
+    ms.solve_right_hand()
+    # x,y = ms.find_start()
+    # print(ms._find_wall(x,y,Direction.DOWN))
 
 if __name__ == "__main__":
     main()
