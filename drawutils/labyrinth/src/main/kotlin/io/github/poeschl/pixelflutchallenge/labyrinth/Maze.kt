@@ -5,10 +5,8 @@ import io.github.poeschl.pixelflutchallenge.shared.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.Color
-import java.util.concurrent.locks.ReentrantLock
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import kotlin.concurrent.withLock
 
 class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
 
@@ -19,7 +17,6 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
         private val WALL_COLOR = Color.WHITE
         private val START_COLOR = Color.CYAN
         private val END_COLOR = Color.MAGENTA
-        private val DRAW_LOCK = ReentrantLock()
 
         const val CELL_SIZE = PATH_SIZE + BORDER_WIDTH * 2
     }
@@ -38,15 +35,11 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
     }
 
     fun draw(drawInterface: PixelFlutInterface) {
-        DRAW_LOCK.withLock {
-            drawInterface.paintPixelSet(mazeSet)
-        }
+        drawInterface.paintPixelSet(mazeSet)
     }
 
     fun clear() {
-        DRAW_LOCK.withLock {
-            mazeSet = setOf()
-        }
+        mazeSet = setOf()
     }
 
     private fun createGrid() {

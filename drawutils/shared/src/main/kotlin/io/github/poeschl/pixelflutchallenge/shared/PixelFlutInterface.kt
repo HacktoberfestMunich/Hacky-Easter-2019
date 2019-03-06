@@ -42,22 +42,14 @@ class PixelFlutInterface(address: String, port: Int) {
     }
 
     /**
-     * Paints the pixel on the pixel wall.
-     *
-     * @param pixel The pixel to be painted
-     */
-    fun paintPixel(pixel: Pixel) {
-        writer.printf(PAINT_PX_COMMAND + '\n', pixel.point.x, pixel.point.y, convertColorToHex(pixel.color))
-        writer.flush()
-    }
-
-    /**
      * Draw a set of pixels.
      *
      * @param pixels The set of pixels.
      */
     fun paintPixelSet(pixels: Set<Pixel>) {
-        pixels.parallelStream().forEach(this::paintPixel)
+        synchronized(socket) {
+            pixels.parallelStream().forEach(this::paintPixel)
+        }
     }
 
     /**
@@ -105,7 +97,9 @@ class PixelFlutInterface(address: String, port: Int) {
                 .collect(Collectors.toSet())
 
             print("Blanking...")
-            this.paintPixelSet(blackPixels)
+            synchronized(socket) {
+                this.paintPixelSet(blackPixels)
+            }
         }
         println("$blankMillis ms")
     }
@@ -114,6 +108,11 @@ class PixelFlutInterface(address: String, port: Int) {
         writer.close()
         reader.close()
         socket.close()
+    }
+
+    private fun paintPixel(pixel: Pixel) {
+        writer.printf(PAINT_PX_COMMAND + '\n', pixel.point.x, pixel.point.y, convertColorToHex(pixel.color))
+        writer.flush()
     }
 
     private fun convertColorToHex(color: Color): String {
