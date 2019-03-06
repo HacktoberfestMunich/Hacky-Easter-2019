@@ -58,7 +58,7 @@ class PixelFlutInterface(address: String, port: Int) {
      * @return The pixel at the point.
      */
     fun getPixel(point: Point): Pixel {
-        writer.println(GET_PX_COMMAND)
+        writer.println(GET_PX_COMMAND.format(point.x, point.y))
         writer.flush()
 
         val pixelAnswer = reader.readLine() ?: ""
