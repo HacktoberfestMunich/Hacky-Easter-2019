@@ -12,7 +12,7 @@ class Maze(private val origin: Point, val mazeCellSize: Pair<Int, Int>) {
 
     companion object {
         private const val DEBUG = false
-        private const val PATH_SIZE = 8
+        private const val PATH_SIZE = 16
         private const val BORDER_WIDTH = 1
         private val WALL_COLOR = Color.WHITE
         private val START_COLOR = Color.CYAN
