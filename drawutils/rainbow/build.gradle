@@ -1,0 +1,14 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'io.github.poeschl.pixelflutchallenge.rainbow.BorderDrawerKt'
+    }
+}
+
+dependencies {
+    compile project(':shared')
+    compile 'com.xenomachina:kotlin-argparser:2.0.7'
+}
