@@ -54,6 +54,9 @@ class FlutServer:
         x = int(values[0])
         y = int(values[1])
         if len(values) > 2:
+            # correct cut of zeros on start
+            if len(values[2]) < 7:
+                values[2] = str('0') + values[2]
             return tuple(int(values[2][i:i + 2], 16) for i in (0, 2, 4, 6))
         else:
             return (x, y)
@@ -351,11 +354,11 @@ def main():
     #gd.draw_bubbles(100)
     #gd.draw_circle(x, y, 20, 255, 255, 255, 255)
 
-    #x, y, xw, yw = gb.get_random_field()
-    #pd.draw_picture(x, y, xw, yw, "troll.jpg")
-    #pd.draw_animation(x + 30, y, 300, 300,  0, 80, 20, "thug.jpg")
+    x, y, xw, yw = gb.get_random_field()
+    pd.draw_picture(x, y, xw, yw, "troll.jpg")
+    pd.draw_animation(x + 30, y, 300, 300,  0, 80, 20, "thug.jpg")
 
-    ms.solve_right_hand()
+    #ms.solve_right_hand()
     # x,y = ms.find_start()
     # print(ms._find_wall(x,y,Direction.DOWN))
 
