@@ -8,7 +8,7 @@
 :data-y: 0
 :data-scale: 1
 
-.. image:: pixelflut.png
+.. image:: images/pixelflut.png
 
 PixelFlut Challenge
 ===================
@@ -20,29 +20,31 @@ Markus Poeschl & Tobias Schaffner
 :data-x: r2400
 :data-y: 0
 
+.. image:: images/PG_Logo_Web.png
+   :height: 260px
+
 Sponsor
 -------
 
-.. image:: PG_Logo_Web.png
+Pixel Group GmbH
 
 Simon Ashdown
 
-Pixel Group GmbH
-
 ----
 
-.. image:: flut_screen.jpg
+.. image:: images/menu.png
 
 Important things first
 ----------------------
 
 * Schnitzel will arive at about 8:30 PM.
+* Drinks and snacks in this room or in the kitchen.
 
 We also have vegetarians covered. ;)
 
 ----
 
-.. image:: flut_screen.jpg
+.. image:: images/flut_screen.jpg
 
 What is PixelFlut?
 ------------------
@@ -52,20 +54,20 @@ What is PixelFlut?
 
 ----
 
-.. image:: flut_screen.jpg
+.. image:: images/knowledge.jpg
 
 What is this evening about
 --------------------------
 
 1. One 4k PixelFlut Server
 2. Five challanges
-3. Try to solve the challanges faster than the other Teams with the language you like
+3. Try to solve the challanges faster than the other teams with the language you like
 4. ...
 5. Profit (Reward)
 
 ----
 
-.. image:: flut_screen.jpg
+.. image:: images/tcp.jpg
 
 API
 ---
@@ -79,6 +81,8 @@ API
 https://github.com/defnull/pixelflut
 
 ----
+
+.. image:: images/challenge.jpg
 
 Challenges
 ----------
@@ -94,6 +98,8 @@ Challenges
 :data-x: r0
 :data-y: r1000
 
+.. image:: images/rgb.png
+
 Color Spectrum
 --------------
 
@@ -102,6 +108,8 @@ Color Spectrum
 
 ----
 
+.. image:: images/pacman.png
+
 Pacman
 ------
 
@@ -109,6 +117,8 @@ Pacman
 * Every second time it open the mouth a yellow dot should be shown
 
 ----
+
+.. image:: images/maze.png
 
 Minified Maze
 -------------
@@ -119,6 +129,13 @@ Minified Maze
 
 ----
 
+:id: deal-with-it
+
+.. image:: images/troll.png
+
+.. image:: images/thug.jpg
+   :width: 120px
+
 "Deal with it"
 --------------
 
@@ -128,6 +145,8 @@ Minified Maze
 * Background has to be restored behind the moving animation
 
 ----
+
+.. image:: images/maze.png
 
 Maze
 ----
@@ -143,6 +162,8 @@ Maze
 :data-x: r2400
 :data-y: r0
 
+.. image:: images/server.png
+
 Server
 ------
 
@@ -151,7 +172,9 @@ Server
 
 ----
 
-.. image:: flut_screen.jpg
+:id: areas
+
+.. image:: images/areas.png
 
 Areas
 -----
@@ -159,19 +182,25 @@ Areas
 * The canvas is split into 9 equal areas
 * Each group canvas therefore is ``(3840 / 3) x (2160 / 3)``
 * Each group canvas is split into four challenge areas.
+* On the sides of each area is a ``1px`` border.
 
 ----
+
+.. image:: images/rules.jpg
+   :height: 600px
 
 Rules
 -----
 
 * Only use the areas with your Teamnumber.
-* There is a ``1px`` boarder around your group area. Don't overwrite it.
+* There is a ``1px`` border around your group area. Don't overwrite it.
 * Open one TCP connection and reuse it!
 * All challenges has to be moving during the maze solving.
 * Please speak to us when the first four challenges are solved and you are starting the maze.
 
 ----
+
+.. image:: images/questions.jpg
 
 Questions
 ---------
@@ -180,14 +209,19 @@ Any questions so far?
 
 ----
 
-.. image:: flut_screen.jpg
+.. image:: images/rewards.jpg
+   :height: 300px
 
 Reward
 ------
 
 Some motivation
 
+The first Team which completes the 4 animated challenges and draws a line through the maze wins.
+
 ----
+
+.. image:: images/groups.jpg
 
 Grouping
 --------
