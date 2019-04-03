@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'io.github.poeschl.pixelflutchallenge.labyrinth.LabyrinthDrawerKt'
