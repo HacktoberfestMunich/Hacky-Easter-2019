@@ -156,6 +156,8 @@ Maze
 * Draw a ``2px`` line from start left top to end right bottom
 * The space inside one cell is ``16 x 16 px``
 * Use the number of your group as a offset for the lines.
+* Color of the start patch: ``#00FFFF``
+* Color of the finish patch: ``#FF00FF``
 
 ----
 
@@ -192,10 +194,11 @@ Areas
 Rules
 -----
 
-* Only use the areas with your Teamnumber.
+* Only use the group area of your team.
 * There is a ``1px`` border around your group area. Don't overwrite it.
-* Open one TCP connection and reuse it!
+* Open one TCP connection per machine and reuse it!
 * All challenges has to be moving during the maze solving.
+
 * Please speak to us when the first four challenges are solved and you are starting the maze.
 
 ----
