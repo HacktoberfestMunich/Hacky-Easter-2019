@@ -244,3 +244,5 @@ Colorcodes for the maze:
 7. ``#808000``
 8. ``#800080``
 
+Slides:
+https://github.com/HacktoberfestMunich/Pixelflut/blob/master/presentation/intro.rst
