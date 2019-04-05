@@ -13,7 +13,7 @@
 PixelFlut Challenge
 ===================
 
-Markus Poeschl & Tobias Schaffner
+Markus Pöschl & Tobias Schaffner
 
 ----
 
@@ -26,7 +26,7 @@ Markus Poeschl & Tobias Schaffner
 Sponsor
 -------
 
-Pixel Group GmbH
+PIXEL Group GmbH
 
 Simon Ashdown
 
@@ -38,7 +38,7 @@ Important things first
 ----------------------
 
 * Schnitzel will arive at about 8:30 PM.
-* Drinks and snacks in this room or in the kitchen.
+* Drinks and snacks in the kitchen.
 
 We also have vegetarians covered. ;)
 
@@ -166,10 +166,16 @@ Maze
 
 .. image:: images/server.png
 
-Server
-------
+Challenge - Server
+------------------
 
-* IP: ``0.0.0.0``
+* IP: ``10.201.77.102``
+* Port: ``1234``
+
+Playground - Server
+-------------------
+
+* IP: ``10.201.77.104``
 * Port: ``1234``
 
 ----
@@ -197,9 +203,7 @@ Rules
 * Only use the group area of your team.
 * There is a ``1px`` border around your group area. Don't overwrite it.
 * Open one TCP connection per machine and reuse it!
-* All challenges has to be moving during the maze solving.
-
-* Please speak to us when the first four challenges are solved and you are starting the maze.
+* Please speak to us when the first four challenges are solved and you are starting the maze. We will color your area green, when solved.
 
 ----
 
@@ -218,8 +222,6 @@ Any questions so far?
 Reward
 ------
 
-Some motivation
-
 The first Team which completes the 4 animated challenges and draws a line through the maze wins.
 
 ----
@@ -230,3 +232,15 @@ Grouping
 --------
 
 We would like you to form groups with 2-3 people.
+
+Colorcodes for the maze:
+
+1. ``#ff0000``
+2. ``#00ff00``
+3. ``#0000ff``
+4. ``#ffff00``
+5. ``#c0c0c0``
+6. ``#ff0000``
+7. ``#808000``
+8. ``#800080``
+
