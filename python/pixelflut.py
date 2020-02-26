@@ -5,8 +5,10 @@ import time
 from enum import Enum
 from threading import Thread
 import numpy
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
+import textwrap
 import queue
+import requests
 
 
 class Direction(Enum):
@@ -338,6 +340,28 @@ class PictureDrawer():
             time.sleep(1.0 / s)
 
 
+class FontDrawer():
+
+    def __init__(self, flutServer):
+        self._fs = flutServer
+
+    def draw_text(self, x0, y0, x, y, text, color, ignore_white=False):
+        im = Image.new('RGB', (x, y), 'black')
+        draw = ImageDraw.Draw(im)
+        # use a bitmap font
+        font = ImageFont.truetype("/usr/share/fonts/TTF/DejaVuSans.ttf", 35, encoding="unic")
+
+        text = '\n'.join(textwrap.wrap(text, x/20))
+        draw.text((10, 0), text, font=font, fill=color)
+
+        x, y = im.size
+        for i in range(x):
+            for j in range(y):
+                r, g, b = im.getpixel((i, j))
+                if not ignore_white or (r, g, b) != (255, 255, 255):
+                    self._fs.set_pixel(x0 + i, y0 + j, r, g, b)
+
+
 class GameBoard():
 
     def __init__(self, flutServer):
@@ -374,18 +398,25 @@ def main():
     ms = MazeSolver(fs)
     gd = GeometricDrawer(fs)
     pd = PictureDrawer(fs)
+    fd = FontDrawer(fs)
 
     #x, y = ms.find_entry()
     #gd.draw_bubbles(100)
     #gd.draw_circle(x, y, 20, 255, 255, 255, 255)
 
-    x, y, xw, yw = gb.get_random_field()
-    pd.draw_picture(x, y, xw, yw, "troll.jpg")
-    pd.draw_animation(x + 30, y, 300, 300,  0, 80, 20, "thug.jpg")
+    #x, y, xw, yw = gb.get_random_field()
+    #pd.draw_picture(x, y, xw, yw, "troll.jpg")
+    #pd.draw_animation(x + 30, y, 300, 300,  0, 80, 20, "thug.jpg")
+
+    while True:
+        joke = requests.get("http://api.icndb.com/jokes/random").json()['value']['joke']
+        x, y, xw, yw = gb.get_random_field()
+        fd.draw_text(x, y, xw, yw, joke, color='white')
 
     #ms.solve_right_hand()
     # x,y = ms.find_start()
     # print(ms._find_wall(x,y,Direction.DOWN))
+
 
 if __name__ == "__main__":
     main()
