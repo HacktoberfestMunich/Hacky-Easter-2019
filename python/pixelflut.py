@@ -3,9 +3,10 @@ import random
 import socket
 import time
 from enum import Enum
-
+from threading import Thread
 import numpy
 from PIL import Image
+import queue
 
 
 class Direction(Enum):
@@ -16,6 +17,24 @@ class Direction(Enum):
 
 
 class FlutServer:
+
+    class Batcher(Thread):
+
+        def __init__(self, socket):
+            Thread.__init__(self)
+            self._sock = socket
+            self._queue = queue.Queue()
+
+        def send(self, command):
+            self._queue.put(command)
+
+        def run(self):
+            while True:
+                if self._queue.empty():
+                    time.sleep(0.05)
+                else:
+                    items = [self._queue.get() for _ in range(self._queue.qsize())]
+                    self._sock.send(b''.join(items))
 
     def __init__(self, ip, port):
         self._ip = ip
@@ -28,6 +47,8 @@ class FlutServer:
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.settimeout(1.0)
         self._sock.connect((self._ip, self._port))
+        self._batcher = self.Batcher(self._sock)
+        self._batcher.start()
         self._connected = True
 
     def disconnect(self):
@@ -35,14 +56,18 @@ class FlutServer:
             self._sock.close()
             self._connected = False
 
+    def send(self, command):
+        #self._sock.send(command)
+        self._batcher.send(command)
+
     def set_pixel(self, x, y, r, g, b, a=255):
         if not self._connected:
             print("Error: Not connected!")
             return
         if a == 255:
-            self._sock.send(('PX %d %d %02x%02x%02x\n' % (x, y, r, g, b)).encode())
+            self.send(('PX %d %d %02x%02x%02x\n' % (x, y, r, g, b)).encode())
         else:
-            self._sock.send(('PX %d %d %02x%02x%02x%02x\n' % (x, y, r, g, b, a)).encode())
+            self.send(('PX %d %d %02x%02x%02x%02x\n' % (x, y, r, g, b, a)).encode())
 
     def _receive_message(self):
         message = b''
@@ -68,10 +93,10 @@ class FlutServer:
         width, height = self.get_size()
         if x > width - 1 or y > height - 1:
             print(x, y)
-            self._sock.send(('PX %d %d\n' % (width - 1, height - 1)).encode())
+            self.send(('PX %d %d\n' % (width - 1, height - 1)).encode())
             return self._receive_message()
 
-        self._sock.send(('PX %d %d\n' % (x, y)).encode())
+        self.send(('PX %d %d\n' % (x, y)).encode())
         return self._receive_message()
 
     def get_size(self):
